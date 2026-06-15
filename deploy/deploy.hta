@@ -1,0 +1,365 @@
+<html>
+<head>
+<title>WinPE Deployment</title>
+<meta http-equiv="x-ua-compatible" content="ie=9">
+<HTA:APPLICATION
+  APPLICATIONNAME="WinPE Deployment"
+  BORDER="none"
+  CAPTION="no"
+  MAXIMIZEBUTTON="no"
+  MINIMIZEBUTTON="no"
+  SHOWINTASKBAR="no"
+  SINGLEINSTANCE="yes"
+  SYSMENU="no"
+  WINDOWSTATE="maximize"
+/>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#1a1a2e; color:#ffffff; font-family:Arial,sans-serif; overflow:hidden; }
+
+/* ── Header ── */
+#header {
+    background:#16213e;
+    border-bottom:3px solid #0f3460;
+    padding:20px 40px;
+}
+#header h1 { font-size:22px; color:#e94560; margin-bottom:4px; }
+#header h2 { font-size:12px; color:#a0a0b0; font-weight:normal; letter-spacing:2px; }
+
+/* ── Main content ── */
+#content { padding:20px 40px; }
+
+/* Status card */
+#status-card {
+    background:#16213e;
+    border:1px solid #0f3460;
+    border-left:4px solid #e94560;
+    border-radius:4px;
+    padding:14px 20px;
+    margin-bottom:16px;
+}
+#status-label { color:#a0a0b0; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+#status-text  { color:#ffffff; font-size:18px; font-weight:bold; }
+
+/* Overall progress */
+#prog-section { margin-bottom:16px; }
+#prog-header  { overflow:hidden; margin-bottom:6px; }
+#prog-label   { float:left;  color:#a0a0b0; font-size:12px; }
+#prog-pct     { float:right; color:#4ecca3; font-size:13px; font-weight:bold; }
+#prog-track   { background:#0f3460; border-radius:4px; height:20px; overflow:hidden; }
+#prog-fill    { height:20px; background:#e94560; width:0%; transition:width 0.5s; }
+
+/* Steps grid - 2x2 */
+#steps { width:100%; display:table; border-collapse:separate; border-spacing:8px; }
+.step-row { display:table-row; }
+.step-cell { display:table-cell; width:50%; vertical-align:top; }
+.step {
+    background:#16213e;
+    border:2px solid #0f3460;
+    border-radius:6px;
+    padding:14px 16px;
+}
+.step-num {
+    display:inline-block;
+    width:34px; height:34px;
+    border-radius:17px;
+    border:2px solid #0f3460;
+    color:#a0a0b0;
+    font-size:14px; font-weight:bold;
+    text-align:center; line-height:30px;
+    vertical-align:middle;
+}
+.step-info { display:inline-block; vertical-align:middle; margin-left:10px; }
+.step-label  { color:#a0a0b0; font-size:10px; letter-spacing:1px; text-transform:uppercase; }
+.step-title  { color:#ffffff; font-size:14px; font-weight:bold; margin-top:2px; }
+.step-status { color:#a0a0b0; font-size:11px; margin-top:3px; }
+.step-bar-track { background:#0f3460; border-radius:3px; height:5px; overflow:hidden; margin-top:10px; }
+.step-bar-fill  { height:5px; background:#4ecca3; width:0%; }
+
+/* Success banner */
+#success {
+    display:none;
+    background:#0d3b2e;
+    border:2px solid #4ecca3;
+    border-radius:6px;
+    padding:20px;
+    text-align:center;
+    margin-top:16px;
+}
+#success h2 { color:#4ecca3; font-size:22px; margin-bottom:6px; }
+#success p  { color:#a0a0b0; font-size:13px; }
+
+/* Footer */
+#footer {
+    position:fixed; bottom:0; left:0; width:100%;
+    background:#16213e;
+    border-top:2px solid #0f3460;
+    padding:8px 40px;
+    overflow:hidden;
+}
+#footer-left  { float:left;  color:#a0a0b0; font-size:11px; }
+#footer-right { float:right; color:#4ecca3;  font-size:11px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+    <h1>Windows Deployment</h1>
+    <h2>AUTOMATED IMAGE DEPLOYMENT</h2>
+</div>
+
+<div id="content">
+
+    <div id="status-card">
+        <div id="status-label">Current Status</div>
+        <div id="status-text">Initialising...</div>
+    </div>
+
+    <div id="prog-section">
+        <div id="prog-header">
+            <span id="prog-label">Overall Progress</span>
+            <span id="prog-pct">0%</span>
+        </div>
+        <div id="prog-track">
+            <div id="prog-fill"></div>
+        </div>
+    </div>
+
+    <div id="steps">
+        <div class="step-row">
+            <div class="step-cell">
+                <div class="step" id="s1">
+                    <span class="step-num" id="si1">1</span>
+                    <span class="step-info">
+                        <div class="step-label">Step 1 of 4</div>
+                        <div class="step-title" id="st1">Partition Drive</div>
+                        <div class="step-status" id="ss1">Waiting...</div>
+                    </span>
+                    <div class="step-bar-track"><div class="step-bar-fill" id="sp1"></div></div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step" id="s2">
+                    <span class="step-num" id="si2">2</span>
+                    <span class="step-info">
+                        <div class="step-label">Step 2 of 4</div>
+                        <div class="step-title" id="st2">Apply Windows Image</div>
+                        <div class="step-status" id="ss2">Waiting...</div>
+                    </span>
+                    <div class="step-bar-track"><div class="step-bar-fill" id="sp2"></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="step-row">
+            <div class="step-cell">
+                <div class="step" id="s3">
+                    <span class="step-num" id="si3">3</span>
+                    <span class="step-info">
+                        <div class="step-label">Step 3 of 4</div>
+                        <div class="step-title" id="st3">Configure Boot Record</div>
+                        <div class="step-status" id="ss3">Waiting...</div>
+                    </span>
+                    <div class="step-bar-track"><div class="step-bar-fill" id="sp3"></div></div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step" id="s4">
+                    <span class="step-num" id="si4">4</span>
+                    <span class="step-info">
+                        <div class="step-label">Step 4 of 4</div>
+                        <div class="step-title" id="st4">Finalise Deployment</div>
+                        <div class="step-status" id="ss4">Waiting...</div>
+                    </span>
+                    <div class="step-bar-track"><div class="step-bar-fill" id="sp4"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="success">
+        <h2>&#10003; Deployment Complete</h2>
+        <p>Image deployed successfully. Remove the USB drive. Rebooting in 15 seconds...</p>
+    </div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-right">00:00:00</div>
+    <div id="footer-left">WinPE Auto Deploy</div>
+</div>
+
+<script language="VBScript">
+' ── VBScript: UI helpers only ─────────────────────────────────────────────────
+' All timers are in JavaScript below (JS setTimeout works when HTA loses focus;
+' VBScript setTimeout pauses - critical issue in WinPE with no Explorer shell)
+
+Dim g_fso, g_dismPct, g_dismActive
+g_dismPct    = 0
+g_dismActive = False
+
+Sub SetOverall(pct, txt)
+    document.getElementById("prog-fill").style.width  = pct & "%"
+    document.getElementById("prog-pct").innerText     = pct & "%"
+    document.getElementById("status-text").innerText  = txt
+End Sub
+
+Sub SetMini(n, pct)
+    document.getElementById("sp" & n).style.width = pct & "%"
+End Sub
+
+Sub StepActive(n, msg)
+    document.getElementById("s"  & n).style.border      = "2px solid #e94560"
+    document.getElementById("s"  & n).style.background  = "#1a0a1a"
+    document.getElementById("si" & n).innerText          = "..."
+    document.getElementById("si" & n).style.color        = "#e94560"
+    document.getElementById("si" & n).style.borderColor  = "#e94560"
+    document.getElementById("ss" & n).innerText          = msg
+    document.getElementById("ss" & n).style.color        = "#e94560"
+    document.getElementById("st" & n).style.color        = "#e94560"
+    SetMini n, 0
+End Sub
+
+Sub StepDone(n, msg)
+    document.getElementById("s"  & n).style.border      = "2px solid #4ecca3"
+    document.getElementById("s"  & n).style.background  = "#0d1f1a"
+    document.getElementById("si" & n).innerText          = Chr(10003)
+    document.getElementById("si" & n).style.background  = "#4ecca3"
+    document.getElementById("si" & n).style.borderColor  = "#4ecca3"
+    document.getElementById("si" & n).style.color        = "#000000"
+    document.getElementById("ss" & n).innerText          = msg
+    document.getElementById("ss" & n).style.color        = "#4ecca3"
+    SetMini n, 100
+End Sub
+
+Sub ShowError(msg)
+    document.getElementById("status-text").innerText          = "ERROR: " & msg
+    document.getElementById("status-card").style.borderColor  = "#ff4444"
+    document.getElementById("status-card").style.borderLeft   = "4px solid #ff4444"
+End Sub
+
+' Poll is called by JavaScript doPoll() every 3 seconds
+' Returns True to stop polling, False to continue
+Function Poll()
+    Poll = False
+
+    ' Check errors first
+    If g_fso.FileExists("X:\s_error_usb")  Then : ShowError "USB drive with install.wim not found" : Poll = True : Exit Function : End If
+    If g_fso.FileExists("X:\s_error_part") Then : ShowError "Partitioning failed"                  : Poll = True : Exit Function : End If
+    If g_fso.FileExists("X:\s_error_dism") Then : ShowError "DISM image apply failed"              : Poll = True : Exit Function : End If
+    If g_fso.FileExists("X:\s_error_bcd")  Then : ShowError "Boot record configuration failed"     : Poll = True : Exit Function : End If
+
+    ' Step 1
+    If g_fso.FileExists("X:\s_step1") Then
+        If Not g_fso.FileExists("X:\s_step1_done") Then
+            If document.getElementById("si1").innerText <> "..." Then
+                StepActive 1, "Partitioning internal drive..."
+                SetOverall 5, "Partitioning internal drive..."
+            End If
+            Exit Function
+        Else
+            If document.getElementById("si1").innerText <> Chr(10003) Then
+                StepDone 1, "Complete"
+                SetOverall 10, "Partitioning complete."
+            End If
+        End If
+    End If
+
+    ' Step 2
+    If g_fso.FileExists("X:\s_step2") Then
+        If Not g_fso.FileExists("X:\s_step2_done") Then
+            If Not g_dismActive Then
+                StepActive 2, "Applying image - this takes 20-35 minutes..."
+                SetOverall 12, "Applying image - please wait..."
+                g_dismPct    = 0
+                g_dismActive = True
+            End If
+            If g_dismPct < 90 Then
+                g_dismPct = g_dismPct + 1
+                SetMini 2, g_dismPct
+                Dim ov : ov = 12 + (g_dismPct / 90) * 70
+                document.getElementById("prog-fill").style.width = ov & "%"
+                document.getElementById("prog-pct").innerText    = Int(ov) & "%"
+            End If
+            Exit Function
+        Else
+            If document.getElementById("si2").innerText <> Chr(10003) Then
+                g_dismActive = False
+                StepDone 2, "Image applied"
+                SetOverall 85, "Image applied. Configuring boot record..."
+            End If
+        End If
+    End If
+
+    ' Step 3
+    If g_fso.FileExists("X:\s_step3") Then
+        If Not g_fso.FileExists("X:\s_step3_done") Then
+            If document.getElementById("si3").innerText <> "..." Then
+                StepActive 3, "Configuring UEFI boot record..."
+                SetOverall 87, "Configuring boot record..."
+            End If
+            Exit Function
+        Else
+            If document.getElementById("si3").innerText <> Chr(10003) Then
+                StepDone 3, "Boot record configured"
+                SetOverall 95, "Boot record configured."
+            End If
+        End If
+    End If
+
+    ' Step 4 done
+    If g_fso.FileExists("X:\s_step4_done") Then
+        If document.getElementById("si4").innerText <> Chr(10003) Then
+            StepActive 4, "Finalising..."
+            SetOverall 98, "Finalising..."
+            Dim i
+            For i = 10 To 100 Step 10 : SetMini 4, i : Next
+            StepDone 4, "Complete"
+            SetOverall 100, "Deployment complete!"
+            document.getElementById("success").style.display = "block"
+            document.getElementById("status-text").innerText = "Rebooting in 15 seconds..."
+        End If
+        Poll = True
+    End If
+End Function
+
+Sub VBSInit()
+    Set g_fso = CreateObject("Scripting.FileSystemObject")
+    window.resizeTo screen.availWidth, screen.availHeight
+    window.moveTo 0, 0
+    SetOverall 0, "Initialising deployment..."
+End Sub
+</script>
+
+<script language="JavaScript">
+// JavaScript handles ALL timers - critical in WinPE because VBScript setTimeout
+// pauses when the HTA loses focus to the console window. JS setTimeout does not.
+
+function doPoll() {
+    try {
+        var done = Poll();
+        if (!done) {
+            window.setTimeout("doPoll()", 3000);
+        }
+    } catch(e) {
+        window.setTimeout("doPoll()", 3000);
+    }
+}
+
+function doTick() {
+    var d = new Date();
+    var h = ("0" + d.getHours()).slice(-2);
+    var m = ("0" + d.getMinutes()).slice(-2);
+    var s = ("0" + d.getSeconds()).slice(-2);
+    document.getElementById("footer-right").innerText = h + ":" + m + ":" + s;
+    window.setTimeout("doTick()", 1000);
+}
+
+window.onload = function() {
+    VBSInit();
+    doTick();
+    window.setTimeout("doPoll()", 2000);
+}
+</script>
+
+</body>
+</html>
