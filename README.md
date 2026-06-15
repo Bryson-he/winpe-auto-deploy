@@ -2,7 +2,6 @@
 
 A lightweight, fully automated Windows imaging solution using WinPE, a custom HTA progress UI, and a CMD deployment script. No MDT, no SCCM, no server infrastructure required — just a bootable USB and a captured WIM image.
 
-![WinPE Deployment UI](screenshot.png)
 
 ---
 
